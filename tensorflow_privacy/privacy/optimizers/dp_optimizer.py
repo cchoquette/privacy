@@ -67,21 +67,21 @@ def make_optimizer_class(cls):
       self._unroll_microbatches = unroll_microbatches
       self._was_compute_gradients_called = False
 
-    def get_gradients(self,
-                          loss,
-                          var_list):
-      # By default, keras runs in Graph mode.
-      self._was_compute_gradients_called = True
-      # Note: it would be closer to the correct i.i.d. sampling of records if
-      # we sampled each microbatch from the appropriate binomial distribution,
-      # although that still wouldn't be quite correct because it would be
-      # sampling from the dataset without replacement.
-      if self._num_microbatches is None:
-        self._num_microbatches = tf.shape(input=loss)[0]
-
-      microbatches_losses = tf.reshape(loss, [self._num_microbatches, -1])
-      sample_params = (
-          self._dp_sum_query.derive_sample_params(self._global_state))
+    # def get_gradients(self,
+    #                   loss,
+    #                   var_list):
+    #   # By default, keras runs in Graph mode.
+    #   self._was_compute_gradients_called = True
+    #   # Note: it would be closer to the correct i.i.d. sampling of records if
+    #   # we sampled each microbatch from the appropriate binomial distribution,
+    #   # although that still wouldn't be quite correct because it would be
+    #   # sampling from the dataset without replacement.
+    #   if self._num_microbatches is None:
+    #     self._num_microbatches = tf.shape(input=loss)[0]
+    #
+    #   microbatches_losses = tf.reshape(loss, [self._num_microbatches, -1])
+    #   sample_params = (
+    #       self._dp_sum_query.derive_sample_params(self._global_state))
 
       def process_microbatch(i, sample_state):
         """Process one microbatch (record) with privacy helper."""
@@ -175,8 +175,8 @@ def make_optimizer_class(cls):
 
       else:
         # TF is running in graph mode, check we did not receive a gradient tape.
-        if gradient_tape:
-          raise ValueError('When in graph mode, a tape should not be passed.')
+        # if gradient_tape:
+        #   raise ValueError('When in graph mode, a tape should not be passed.')
 
         # Note: it would be closer to the correct i.i.d. sampling of records if
         # we sampled each microbatch from the appropriate binomial distribution,
@@ -188,13 +188,17 @@ def make_optimizer_class(cls):
         microbatches_losses = tf.reshape(loss, [self._num_microbatches, -1])
         sample_params = (
             self._dp_sum_query.derive_sample_params(self._global_state))
-
         def process_microbatch(i, sample_state):
           """Process one microbatch (record) with privacy helper."""
-          grads, _ = zip(*super(DPOptimizerClass, self).compute_gradients(
+          if gradient_tape:
+            grads = zip(*gradient_tape.gradients(
               tf.reduce_mean(input_tensor=tf.gather(
-                  microbatches_losses, [i])), var_list, gate_gradients,
-              aggregation_method, colocate_gradients_with_ops, grad_loss))
+                  microbatches_losses, [i])), var_list))
+          else:
+            grads, _ = zip(*super(DPOptimizerClass, self)._compute_gradients(
+                tf.reduce_mean(input_tensor=tf.gather(
+                    microbatches_losses, [i])), var_list, gate_gradients,
+                aggregation_method, colocate_gradients_with_ops, grad_loss))
           grads_list = [
               g if g is not None else tf.zeros_like(v)
               for (g, v) in zip(list(grads), var_list)
