@@ -191,7 +191,7 @@ def make_optimizer_class(cls):
         def process_microbatch(i, sample_state):
           """Process one microbatch (record) with privacy helper."""
           if gradient_tape:
-            grads = zip(*gradient_tape.gradients(
+            grads = zip(*gradient_tape.gradient(
               tf.reduce_mean(input_tensor=tf.gather(
                   microbatches_losses, [i])), var_list))
           else:
