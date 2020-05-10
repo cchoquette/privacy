@@ -266,8 +266,8 @@ def make_gaussian_optimizer_class(cls):
         unroll_microbatches=False,
         *args,  # pylint: disable=keyword-arg-before-vararg
         **kwargs):
-      dp_sum_query = gaussian_query.GaussianSumQuery(
-          l2_norm_clip, l2_norm_clip * noise_multiplier)
+      dp_sum_query = tf.function(gaussian_query.GaussianSumQuery(
+          l2_norm_clip, l2_norm_clip * noise_multiplier))
 
       if ledger:
         dp_sum_query = privacy_ledger.QueryWithLedger(dp_sum_query,
