@@ -19,17 +19,15 @@ from __future__ import print_function
 
 from absl import logging
 
-import tensorflow.compat.v1 as tf
+import tensorflow as tf
 
 from tensorflow_privacy.privacy.analysis import privacy_ledger
 from tensorflow_privacy.privacy.dp_query import gaussian_query
 
-
 def make_optimizer_class(cls):
   """Constructs a DP optimizer class from an existing one."""
-  parent_code = tf.train.Optimizer.compute_gradients.__code__
-  child_code = cls.compute_gradients.__code__
-  GATE_OP = tf.train.Optimizer.GATE_OP  # pylint: disable=invalid-name
+  parent_code = tf.keras.optimizers.Optimizer.get_gradients.__code__
+  child_code = cls.get_gradients.__code__
   if child_code is not parent_code:
     logging.warning(
         'WARNING: Calling make_optimizer_class() on class %s that overrides '
@@ -72,7 +70,7 @@ def make_optimizer_class(cls):
     def compute_gradients(self,
                           loss,
                           var_list,
-                          gate_gradients=GATE_OP,
+                          gate_gradients=tf.keras.optimizers.GATE_OP,
                           aggregation_method=None,
                           colocate_gradients_with_ops=False,
                           grad_loss=None,
@@ -225,9 +223,9 @@ def make_gaussian_optimizer_class(cls):
 
   return DPGaussianOptimizerClass
 
-AdagradOptimizer = tf.train.AdagradOptimizer
-AdamOptimizer = tf.train.AdamOptimizer
-GradientDescentOptimizer = tf.train.GradientDescentOptimizer
+AdagradOptimizer = tf.keras.optimizers.Adagrad
+AdamOptimizer = tf.keras.optimizers.Adam
+GradientDescentOptimizer = tf.keras.optimizers.SGD
 
 DPAdagradOptimizer = make_optimizer_class(AdagradOptimizer)
 DPAdamOptimizer = make_optimizer_class(AdamOptimizer)

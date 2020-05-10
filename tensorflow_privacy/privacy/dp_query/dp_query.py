@@ -48,7 +48,7 @@ from __future__ import print_function
 
 import abc
 
-import tensorflow.compat.v1 as tf
+import tensorflow as tf
 
 
 class DPQuery(object):
