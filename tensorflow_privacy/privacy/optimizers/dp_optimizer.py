@@ -124,7 +124,7 @@ def make_optimizer_class(cls):
     #   final_grads = tf.nest.map_structure(normalize, grad_sums)
     #
     #   return list(zip(final_grads, var_list))
-
+    @tf.function
     def compute_gradients(self,
                           loss,
                           var_list,
