@@ -20,6 +20,7 @@ from __future__ import print_function
 from absl import logging
 
 import tensorflow as tf
+from tensorflow.python.training import optimizer
 
 from tensorflow_privacy.privacy.analysis import privacy_ledger
 from tensorflow_privacy.privacy.dp_query import gaussian_query
@@ -70,7 +71,7 @@ def make_optimizer_class(cls):
     def compute_gradients(self,
                           loss,
                           var_list,
-                          gate_gradients=tf.keras.optimizers.GATE_OP,
+                          gate_gradients=optimizer.GATE_OP,
                           aggregation_method=None,
                           colocate_gradients_with_ops=False,
                           grad_loss=None,
