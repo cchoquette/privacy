@@ -188,6 +188,7 @@ def make_optimizer_class(cls):
         microbatches_losses = tf.reshape(loss, [self._num_microbatches, -1])
         sample_params = (
             self._dp_sum_query.derive_sample_params(self._global_state))
+        @tf.function
         def process_microbatch(i, sample_state):
           """Process one microbatch (record) with privacy helper."""
           if gradient_tape:
