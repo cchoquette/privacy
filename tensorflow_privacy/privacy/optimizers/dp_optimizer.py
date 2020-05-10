@@ -82,48 +82,48 @@ def make_optimizer_class(cls):
     #   microbatches_losses = tf.reshape(loss, [self._num_microbatches, -1])
     #   sample_params = (
     #       self._dp_sum_query.derive_sample_params(self._global_state))
-
-      def process_microbatch(i, sample_state):
-        """Process one microbatch (record) with privacy helper."""
-        grads, _ = zip(*super(DPOptimizerClass, self).get_gradients(
-            tf.reduce_mean(input_tensor=tf.gather(
-                microbatches_losses, [i])), var_list))
-        grads_list = [
-            g if g is not None else tf.zeros_like(v)
-            for (g, v) in zip(list(grads), var_list)
-        ]
-        sample_state = self._dp_sum_query.accumulate_record(
-            sample_params, sample_state, grads_list)
-        return sample_state
-
-      if var_list is None:
-        var_list = self.trainable_variables
-
-      sample_state = self._dp_sum_query.initial_sample_state(var_list)
-
-      if self._unroll_microbatches:
-        for idx in range(self._num_microbatches):
-          sample_state = process_microbatch(idx, sample_state)
-      else:
-        # Use of while_loop here requires that sample_state be a nested
-        # structure of tensors. In general, we would prefer to allow it to be
-        # an arbitrary opaque type.
-        cond_fn = lambda i, _: tf.less(i, self._num_microbatches)
-        body_fn = lambda i, state: [tf.add(i, 1), process_microbatch(i, state)]  # pylint: disable=line-too-long
-        idx = tf.constant(0)
-        _, sample_state = tf.while_loop(
-            cond=cond_fn, body=body_fn, loop_vars=[idx, sample_state])
-
-      grad_sums, self._global_state = (
-          self._dp_sum_query.get_noised_result(
-              sample_state, self._global_state))
-
-      def normalize(v):
-        return tf.truediv(v, tf.cast(self._num_microbatches, tf.float32))
-
-      final_grads = tf.nest.map_structure(normalize, grad_sums)
-
-      return list(zip(final_grads, var_list))
+    #
+    #   def process_microbatch(i, sample_state):
+    #     """Process one microbatch (record) with privacy helper."""
+    #     grads, _ = zip(*super(DPOptimizerClass, self).get_gradients(
+    #         tf.reduce_mean(input_tensor=tf.gather(
+    #             microbatches_losses, [i])), var_list))
+    #     grads_list = [
+    #         g if g is not None else tf.zeros_like(v)
+    #         for (g, v) in zip(list(grads), var_list)
+    #     ]
+    #     sample_state = self._dp_sum_query.accumulate_record(
+    #         sample_params, sample_state, grads_list)
+    #     return sample_state
+    #
+    #   if var_list is None:
+    #     var_list = self.trainable_variables
+    #
+    #   sample_state = self._dp_sum_query.initial_sample_state(var_list)
+    #
+    #   if self._unroll_microbatches:
+    #     for idx in range(self._num_microbatches):
+    #       sample_state = process_microbatch(idx, sample_state)
+    #   else:
+    #     # Use of while_loop here requires that sample_state be a nested
+    #     # structure of tensors. In general, we would prefer to allow it to be
+    #     # an arbitrary opaque type.
+    #     cond_fn = lambda i, _: tf.less(i, self._num_microbatches)
+    #     body_fn = lambda i, state: [tf.add(i, 1), process_microbatch(i, state)]  # pylint: disable=line-too-long
+    #     idx = tf.constant(0)
+    #     _, sample_state = tf.while_loop(
+    #         cond=cond_fn, body=body_fn, loop_vars=[idx, sample_state])
+    #
+    #   grad_sums, self._global_state = (
+    #       self._dp_sum_query.get_noised_result(
+    #           sample_state, self._global_state))
+    #
+    #   def normalize(v):
+    #     return tf.truediv(v, tf.cast(self._num_microbatches, tf.float32))
+    #
+    #   final_grads = tf.nest.map_structure(normalize, grad_sums)
+    #
+    #   return list(zip(final_grads, var_list))
 
     def compute_gradients(self,
                           loss,
