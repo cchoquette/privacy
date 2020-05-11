@@ -21,7 +21,7 @@ from __future__ import print_function
 
 import collections
 
-import tensorflow.compat.v1 as tf
+import tensorflow as tf
 
 from tensorflow_privacy.privacy.dp_query import dp_query
 
