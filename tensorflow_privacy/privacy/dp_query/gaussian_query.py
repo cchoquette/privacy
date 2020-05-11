@@ -61,11 +61,9 @@ class GaussianSumQuery(dp_query.SumAggregationDPQuery):
   def initial_global_state(self):
     return self.make_global_state(self._l2_norm_clip, self._stddev)
 
-  @tf.function
   def derive_sample_params(self, global_state):
     return global_state.l2_norm_clip
 
-  @tf.function
   def initial_sample_state(self, template):
     return tf.nest.map_structure(
         dp_query.zeros_like, template)
@@ -91,7 +89,6 @@ class GaussianSumQuery(dp_query.SumAggregationDPQuery):
     preprocessed_record, _ = self.preprocess_record_impl(params, record)
     return preprocessed_record
 
-  @tf.function
   def get_noised_result(self, sample_state, global_state):
     """See base class."""
     if LooseVersion(tf.__version__) < LooseVersion('2.0.0'):
