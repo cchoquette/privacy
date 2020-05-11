@@ -139,6 +139,7 @@ class DPQuery(object):
     """
     pass
 
+  @tf.function
   def accumulate_record(self, params, sample_state, record):
     """Accumulates a single record into the sample state.
 
